@@ -6,7 +6,7 @@ defmodule Grizzly.Transport do
 
   alias Grizzly.ZWave.{Command, DecodeError}
 
-  @opaque t() :: %__MODULE__{impl: module(), priv: map()}
+  @opaque t() :: %__MODULE__{impl: module(), assigns: map()}
 
   @type socket() :: :ssl.sslsocket() | :inet.socket()
 
@@ -16,7 +16,7 @@ defmodule Grizzly.Transport do
         ]
 
   @enforce_keys [:impl]
-  defstruct priv: %{}, impl: nil
+  defstruct assigns: %{}, impl: nil
 
   @callback open(keyword()) :: {:ok, t()} | {:error, :timeout}
 
@@ -33,26 +33,26 @@ defmodule Grizzly.Transport do
   If need to optionally assign some priv data you can map that into this function.
   """
   @spec new(module(), map()) :: t()
-  def new(impl, priv_data \\ %{}) do
+  def new(impl, assigns \\ %{}) do
     %__MODULE__{
       impl: impl,
-      priv: priv_data
+      assigns: assigns
     }
   end
 
   @doc """
-  Put a new value into the priv data for the transport
+  Update the assigns with this field and value
   """
-  @spec put_priv(t(), atom(), any()) :: t()
-  def put_priv(transport, priv_field, priv_value),
-    do: Map.put(transport.priv, priv_field, priv_value)
+  @spec assigns(t(), atom(), any()) :: t()
+  def assigns(transport, assign, assign_value),
+    do: Map.put(transport.assigns, assign, assign_value)
 
   @doc """
-  Get the value from the priv data for the transport
+  Get the assign value for the field
   """
-  @spec get_priv(t(), atom(), any()) :: any()
-  def get_priv(transport, priv_field, default_priv_value \\ nil),
-    do: Map.get(transport.priv, priv_field, default_priv_value)
+  @spec assign(t(), atom(), any()) :: any()
+  def assign(transport, assign, default \\ nil),
+    do: Map.get(transport.assigns, assign, default)
 
   @doc """
   Open the transport

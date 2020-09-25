@@ -22,7 +22,7 @@ defmodule Grizzly.Transports.DTLS do
 
   @impl Grizzly.Transport
   def send(transport, binary) do
-    socket = Transport.get_priv(transport, :socket)
+    socket = Transport.assign(transport, :socket)
     :ssl.send(socket, binary)
   end
 
@@ -38,7 +38,7 @@ defmodule Grizzly.Transports.DTLS do
   @impl Grizzly.Transport
   def close(transport) do
     transport
-    |> Transport.get_priv(:socket)
+    |> Transport.assign(:socket)
     |> :ssl.close()
   end
 

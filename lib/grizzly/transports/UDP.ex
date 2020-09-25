@@ -1,30 +1,32 @@
-defmodule GrizzlyTest.Transport.UDP do
-  @moduledoc false
-
+defmodule Grizzly.Transports.UDP do
+  @moduledoc """
+  Grizzly transport implementation for UDP
+  """
   @behaviour Grizzly.Transport
 
   alias Grizzly.{Transport, ZWave}
 
-  @test_host {0, 0, 0, 0}
-  @test_port 5_000
-
   @impl Grizzly.Transport
   def open(args) do
-    case Keyword.get(args, :ip_address) do
-      {0, 0, 0, 600} ->
-        {:error, :timeout}
+    priv = Enum.into(args, %{})
 
-      {0, 0, 0, node_id} ->
-        {:ok, socket} = :gen_udp.open(@test_port + node_id, [:binary, {:active, true}])
-        {:ok, Transport.new(__MODULE__, %{socket: socket})}
+    case :gen_udp.open(4000, [:binary, {:active, true}, :inet6]) do
+      {:ok, socket} ->
+        {:ok, Transport.new(__MODULE__, Map.put(priv, :socket, socket))}
+
+      error ->
+        error
     end
   end
 
   @impl Grizzly.Transport
   def send(transport, binary) do
+    host = Transport.assign(transport, :ip_address)
+    port = Transport.assign(transport, :port)
+
     transport
     |> Transport.assign(:socket)
-    |> :gen_udp.send(@test_host, @test_port, binary)
+    |> :gen_udp.send(host, port, binary)
   end
 
   @impl Grizzly.Transport
